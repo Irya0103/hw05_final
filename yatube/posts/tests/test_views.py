@@ -6,7 +6,6 @@ from django.contrib.auth import get_user_model
 
 from ..forms import PostForm
 from ..models import Group, Post, User, Follow
-from http import HTTPStatus
 
 TEST_OF_POST = 13
 User = get_user_model()
@@ -120,7 +119,7 @@ class PostPagesTests(TestCase):
         self.assertTrue(is_edit_context)
         self.assertIsInstance(response.context.get('form'), PostForm)
         self.assertEqual(response.context['form'].instance, self.post)
-        
+
     def test_add_comment(self):
         """Авторизированный пользователь может оставить коментарий"""
 
@@ -141,7 +140,7 @@ class PostPagesTests(TestCase):
         )
         response = self.guest_client.get(f'/posts/{self.post.id}/')
         self.assertNotContains(response, coments['text'])
-        
+
     def test_cache_index(self):
         """Проверка хранения и очищения кэша для index."""
         response = self.authorized_client.get(reverse('posts:index'))
@@ -157,7 +156,6 @@ class PostPagesTests(TestCase):
         response_new = self.authorized_client.get(reverse('posts:index'))
         new_posts = response_new.content
         self.assertNotEqual(old_posts, new_posts)
-
 
 
 class PaginatorViewsTest(TestCase):
@@ -215,7 +213,7 @@ class PaginatorViewsTest(TestCase):
         url = reverse('posts:profile', kwargs={'username': username}) + page2
         response = self.guest_client.get(url)
         self.assertEqual(len(response.context['page_obj']), 3)
-        
+
 class FollowViewsTest(TestCase):
     @classmethod
     def setUpClass(cls):

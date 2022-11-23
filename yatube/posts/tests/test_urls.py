@@ -20,7 +20,7 @@ class PostURLTests(TestCase):
             author=cls.user,
             text='Тестовый пост',
             group=cls.group)
-    
+
     def setUp(self):
         self.guest_client = Client()
         self.authorized_client = Client()

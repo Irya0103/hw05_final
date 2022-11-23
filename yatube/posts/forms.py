@@ -17,7 +17,7 @@ class PostForm(forms.ModelForm):
             'text': "Текст нового поста",
             'group': "Группа, к которой будет относиться пост",
         }
-        
+  
 
 class CommentForm(forms.ModelForm):
     class Meta:

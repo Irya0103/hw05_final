@@ -45,7 +45,7 @@ class PostCreateFormTest(TestCase):
             b'\x02\x00\x01\x00\x00\x02\x02\x0C'
             b'\x0A\x00\x3B'
         )
-        
+
     def test_post(self):
         """ Проверка валидного поста"""
         count_posts = Post.objects.count()
@@ -75,7 +75,7 @@ class PostCreateFormTest(TestCase):
                 text='text',
                 image='posts/small.gif'
             ).exists()
-        )  
+        )
 
     def test_guest_new_post(self):
         """Неавторизоанный пользователь не может создавать посты"""
@@ -153,7 +153,7 @@ class PostCreateFormTest(TestCase):
             .filter(text=form_data['text'])
             .exists()
         )
-        
+
 
 class FormsTests(TestCase):
     @classmethod
