@@ -214,6 +214,7 @@ class PaginatorViewsTest(TestCase):
         response = self.guest_client.get(url)
         self.assertEqual(len(response.context['page_obj']), 3)
 
+
 class FollowViewsTest(TestCase):
     @classmethod
     def setUpClass(cls):
