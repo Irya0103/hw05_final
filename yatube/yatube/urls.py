@@ -10,6 +10,9 @@ urlpatterns = [
     path('', include('posts.urls', namespace='posts')),
     path('about/', include('about.urls', namespace='about')),
 ]
+handler403 = 'core.views.page_not_found_403'
+handler404 = 'core.views.page_not_found'
+handler500 = 'core.views.page_not_found_500'
 if settings.DEBUG:
     urlpatterns += static(
         settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
