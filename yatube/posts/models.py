@@ -34,6 +34,10 @@ class Post(models.Model):
         upload_to='posts/',
         blank=True
     )
+    
+    class Meta:
+        ordering = ['-pub_date']
+
 
     def __str__(self):
         return self.text[:15]
