@@ -57,7 +57,7 @@ class Comment(models.Model):
     created = models.DateTimeField('date published', auto_now_add=True)
 
     def __str__(self):
-        return self.text
+        return self.text[:15]
 
 
 class Follow(models.Model):
@@ -70,3 +70,11 @@ class Follow(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='following')
+    
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'author'],
+                name='unique follow'
+            ),
+        ]

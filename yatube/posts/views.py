@@ -12,7 +12,7 @@ COUNT_OF_POSTS = 10
 @cache_page(20, key_prefix='index_page')
 def index(request):
     post_list = Post.objects.select_related(
-        'author', 'group').order_by('-pub_date')
+        'author', 'group')
     paginator = Paginator(post_list, COUNT_OF_POSTS)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -25,7 +25,7 @@ def index(request):
 def group_posts(request, slug):
     """Страница сообщества для постов"""
     group = get_object_or_404(Group, slug=slug)
-    posts = group.posts.select_related('author').order_by('-pub_date')
+    posts = group.posts.select_related('author')
     paginator = Paginator(posts, COUNT_OF_POSTS)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -39,7 +39,7 @@ def group_posts(request, slug):
 def profile(request, username):
     """Здесь код запроса к модели и создание словаря контекста"""
     author = get_object_or_404(User, username=username)
-    post_list = author.posts.select_related('group').order_by('-pub_date')
+    post_list = author.posts.select_related('group')
     paginator = Paginator(post_list, COUNT_OF_POSTS)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)

@@ -102,9 +102,13 @@ class PostPagesTests(TestCase):
         """Шаблон post_detail сформирован с правильным контекстом"""
         response = self.authorized_client.get(
             reverse('posts:post_detail', kwargs={'post_id': self.post.id}))
+        comment = 'Kомментарий'
+        comment = Post.objects.get(id=self.post.id)
         self.assertEqual(response.context.get('post').text, self.post.text)
         self.assertEqual(response.context.get('post').author, self.post.author)
         self.assertEqual(response.context.get('post').group, self.post.group)
+        self.assertEqual(Post.objects.count(), 1)
+        self.assertEqual(response.context.get('post'), comment)
 
     def test_post_create_show_correct_context(self):
         """Шаблон post_create сформирован с правильным  контекстом."""
@@ -235,6 +239,9 @@ class FollowViewsTest(TestCase):
 
     def test_follow(self):
         """Пользовтель может подписаться на автора."""
+        Follow.objects.get_or_create(
+            user=self.follower1,
+            author=self.follower2)
         self.authorized_client.post(reverse(
             'posts:profile_follow',
             kwargs={'username': self.follower2.username}))
@@ -254,17 +261,18 @@ class FollowViewsTest(TestCase):
             user=self.follower1,
             author=self.follower2).exists())
 
-    def test_new_post_appears_subscribers_feed(self):
-        """Запись будет на странице подписчика
-        и не появится на странице не подписанного пользователя.
-        """
-        Follow.objects.create(
-            user=self.follower1,
-            author=self.follower2)
-        post = Post.objects.create(
-            author=self.follower2,
-            text='Тестовый пост')
+    def test_follow_on_authors(self):
+        """Проверка записей у подписчиков."""
+        post = Post.objects.create(author=self.follower2,
+                                   text="Подпишись на меня")
+        Follow.objects.create(user=self.follower1,
+                              author=self.follower2)
         response = self.authorized_client.get(reverse('posts:follow_index'))
-        self.assertIn(post, response.context['page_obj'])
-        response = self.authorized_client3.get(reverse('posts:follow_index'))
-        self.assertNotIn(post, response.context['page_obj'])
+        self.assertIn(post, response.context['page_obj'].object_list)
+
+    def test_notfollow_on_authors(self):
+        """Проверка записей у тех кто не подписан."""
+        post = Post.objects.create(author=self.follower2,
+                                   text="Подпишись на меня")
+        response = self.authorized_client.get(reverse('posts:follow_index'))
+        self.assertNotIn(post, response.context['page_obj'].object_list)
