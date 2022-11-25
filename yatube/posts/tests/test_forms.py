@@ -6,7 +6,6 @@ import tempfile
 from django.conf import settings
 import shutil
 from django.core.files.uploadedfile import SimpleUploadedFile
-from http import HTTPStatus
 
 User = get_user_model()
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
@@ -18,9 +17,13 @@ class PostCreateFormTest(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.user = User.objects.create_user(username='auth')
+        cls.authorized_client = Client()
+        cls.authorized_client.force_login(cls.user)
+
         cls.group = Group.objects.create(
             title='Заголовок для тестовой группы',
-            slug='test_slug'
+            slug='test_slug',
+            description='Тестовое описание'
         )
         cls.post = Post.objects.create(
             author=cls.user,
@@ -90,12 +93,6 @@ class PostCreateFormTest(TestCase):
             follow=True,
         )
         self.assertEqual(Post.objects.count(), count_posts)
-        self.assertFalse(
-            Post
-            .objects
-            .filter(text=form_data['text'])
-            .exists()
-        )
 
     def test_authorized_edit_post(self):
         """Проверка правльности редактирования"""
@@ -110,35 +107,23 @@ class PostCreateFormTest(TestCase):
             'group': self.group.id,
             'image': uploaded,
         }
-
-        response = self.authorized_client.post(
+        self.authorized_client.post(
             reverse('posts:post_edit',
                     kwargs={'post_id': self.post.pk}),
             data=form_data,
-            follow=True,
-        )
+            follow=True,)
+
         self.assertEqual(Post.objects.count(), count_posts)
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertEqual(
-            form_data['text'],
-            Post.
-            objects.
-            get(pk=self.post.pk).
-            text
-        )
-        self.assertTrue(
-            Post.objects.filter(
-                text='Измененный текст',
-                image='posts/small1.gif'
-            ).exists()
-        )
+        object_post = Post.objects.first()
+        text = object_post.text
+        self.assertEqual(text, form_data['text'])
+        self.assertEqual(object_post.group.id, form_data['group'])
+        self.assertIn('image', form_data)
 
     def test_comment_created(self):
         """проверка ваолидности комментария"""
         count_comment = Comment.objects.count()
         form_data = {
-            'post': self.post,
-            'author': self.user,
             'text': 'Текст комментария'
         }
         self.authorized_client.post(
@@ -147,25 +132,8 @@ class PostCreateFormTest(TestCase):
             follow=True
         )
         self.assertEqual(Comment.objects.count(), count_comment + 1)
-        self.assertTrue(
-            Comment
-            .objects
-            .filter(text=form_data['text'])
-            .exists()
-        )
-
-
-class FormsTests(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.user = User.objects.create_user(username='auth')
-        cls.authorized_client = Client()
-        cls.authorized_client.force_login(cls.user)
-        cls.group = Group.objects.create(
-            title='Тестовая группа',
-            slug='test-slug',
-            description='Тестовое описание')
+        self.assertTrue(Comment.objects
+                        .filter(text=form_data['text']).exists())
 
     def test_create_task(self):
         """Валидная форма создает запись в Post."""
@@ -181,7 +149,7 @@ class FormsTests(TestCase):
         text = object_post.text
         self.assertEqual(text, form_data['text'])
         self.assertEqual(object_post.group.id, form_data['group'])
-        self.assertEqual(object_post.author, FormsTests.user)
+        self.assertEqual(object_post.author, PostCreateFormTest.user)
 
     def test_change_post(self):
         """Валидная форма изменяет запись в Post."""
