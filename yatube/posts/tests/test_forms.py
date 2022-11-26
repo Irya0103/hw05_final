@@ -19,10 +19,9 @@ class PostCreateFormTest(TestCase):
         cls.user = User.objects.create_user(username='auth')
         cls.authorized_client = Client()
         cls.authorized_client.force_login(cls.user)
-
         cls.group = Group.objects.create(
-            title='Заголовок для тестовой группы',
-            slug='test_slug',
+            title='Тестовая группа',
+            slug='test-slug',
             description='Тестовое описание'
         )
         cls.post = Post.objects.create(
@@ -62,23 +61,14 @@ class PostCreateFormTest(TestCase):
             'group': self.group.id,
             'image': uploaded,
         }
-        response = self.authorized_client.post(
+        self.authorized_client.post(
             reverse('posts:post_create'),
             data=form_data,
             follow=True,
         )
-        self.assertRedirects(
-            response,
-            reverse('posts:profile',
-                    kwargs={'username': (self.post.author.username)})
-        )
         self.assertEqual(Post.objects.count(), count_posts + 1)
-        self.assertTrue(
-            Post.objects.filter(
-                text='text',
-                image='posts/small.gif'
-            ).exists()
-        )
+        object_post = Post.objects.first()
+        self.assertEqual(object_post.text, form_data['text'])
 
     def test_guest_new_post(self):
         """Неавторизоанный пользователь не может создавать посты"""
@@ -160,14 +150,14 @@ class PostCreateFormTest(TestCase):
         post_count = Post.objects.count()
         form_data = {
             'text': 'Тестовый текст',
-            'group': self.group.id,
+            'group': self.group.pk,
         }
         self.authorized_client.post(
             reverse("posts:post_edit", args=('1', )),
             data=form_data,
             follow=True)
         self.assertEqual(Post.objects.count(), post_count)
-        object_post = Post.objects.first()
+        object_post = Post.objects.get(pk=self.group.pk)
         text = object_post.text
         self.assertEqual(text, form_data['text'])
-        self.assertEqual(object_post.group.id, form_data['group'])
+        self.assertEqual(object_post.group.pk, form_data['group'])
