@@ -1,11 +1,11 @@
+from django.contrib.auth import get_user_model
+from django.core.cache import cache
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.core.cache import cache
-from django.contrib.auth import get_user_model
 
 from ..forms import PostForm
-from ..models import Group, Post, User, Follow
+from ..models import Follow, Group, Post, User, Comment
 
 TEST_OF_POST = 13
 User = get_user_model()
@@ -100,15 +100,17 @@ class PostPagesTests(TestCase):
 
     def test_post_detail_show_correct_context(self):
         """Шаблон post_detail сформирован с правильным контекстом"""
+        self.comment = Comment.objects.create(
+            post_id=self.post.id,
+            author=self.user,
+            text='тестовый комментарий'
+        )
         response = self.authorized_client.get(
             reverse('posts:post_detail', kwargs={'post_id': self.post.id}))
-        comment = 'Kомментарий'
-        comment = Post.objects.get(id=self.post.id)
         self.assertEqual(response.context.get('post').text, self.post.text)
         self.assertEqual(response.context.get('post').author, self.post.author)
         self.assertEqual(response.context.get('post').group, self.post.group)
-        self.assertEqual(Post.objects.count(), 1)
-        self.assertEqual(response.context.get('post'), comment)
+        self.assertEqual(response.context['comments'][0], self.comment)
 
     def test_post_create_show_correct_context(self):
         """Шаблон post_create сформирован с правильным  контекстом."""
@@ -239,15 +241,14 @@ class FollowViewsTest(TestCase):
 
     def test_follow(self):
         """Пользовтель может подписаться на автора."""
-        Follow.objects.get_or_create(
-            user=self.follower1,
-            author=self.follower2)
+        count_follow = Follow.objects.count()
         self.authorized_client.post(reverse(
             'posts:profile_follow',
             kwargs={'username': self.follower2.username}))
-        self.assertTrue(Follow.objects.filter(
-            user=self.follower1,
-            author=self.follower2).exists())
+        follow = Follow.objects.all().latest('id')
+        self.assertTrue(Follow.objects.count(), count_follow)
+        self.assertTrue(follow.author_id, self.follower1.id)
+        self.assertTrue(follow.user_id, self.follower3.id)
 
     def test_unfollow(self):
         """Пользовтель может отписаться от автора."""

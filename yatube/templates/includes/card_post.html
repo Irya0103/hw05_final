@@ -2,9 +2,6 @@
 <article>
   <ul>
     <li>
-      <a href="{% url 'posts:profile' post.author %}">все посты пользователя</a>
-    </li>
-    <li>
       Дата публикации: {{ post.pub_date|date:"d E Y" }}
     </li>
   </ul>
@@ -17,4 +14,3 @@
     {% if post.group %}
     <a href="{% url 'posts:group_list' post.group.slug %}">все записи группы </a>
     {% endif %}
-    {% if not forloop.last %}<hr>{% endif %}

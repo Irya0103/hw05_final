@@ -1,11 +1,12 @@
+import shutil
+import tempfile
+
+from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
-from posts.models import Group, Post, Comment
-import tempfile
-from django.conf import settings
-import shutil
-from django.core.files.uploadedfile import SimpleUploadedFile
+from posts.models import Comment, Group, Post
 
 User = get_user_model()
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
@@ -69,6 +70,10 @@ class PostCreateFormTest(TestCase):
         self.assertEqual(Post.objects.count(), count_posts + 1)
         object_post = Post.objects.first()
         self.assertEqual(object_post.text, form_data['text'])
+        self.assertEqual(object_post.group.id, form_data['group'])
+        self.assertEqual(object_post.author, PostCreateFormTest.user)
+        self.assertEqual(
+            f'posts/{form_data["image"].name}', object_post.image.name)
 
     def test_guest_new_post(self):
         """Неавторизоанный пользователь не может создавать посты"""
@@ -105,10 +110,10 @@ class PostCreateFormTest(TestCase):
 
         self.assertEqual(Post.objects.count(), count_posts)
         object_post = Post.objects.first()
-        text = object_post.text
-        self.assertEqual(text, form_data['text'])
+        self.assertEqual(object_post.text, form_data['text'])
         self.assertEqual(object_post.group.id, form_data['group'])
-        self.assertIn('image', form_data)
+        self.assertEqual(
+            f'posts/{form_data["image"].name}', object_post.image.name)
 
     def test_comment_created(self):
         """проверка ваолидности комментария"""
@@ -124,40 +129,3 @@ class PostCreateFormTest(TestCase):
         self.assertEqual(Comment.objects.count(), count_comment + 1)
         self.assertTrue(Comment.objects
                         .filter(text=form_data['text']).exists())
-
-    def test_create_task(self):
-        """Валидная форма создает запись в Post."""
-        post_count = Post.objects.count()
-        form_data = {
-            'text': 'Тестовый текст',
-            'group': self.group.id}
-        self.authorized_client.post(
-            reverse("posts:post_create"), data=form_data, follow=True
-        )
-        self.assertEqual(Post.objects.count(), post_count + 1)
-        object_post = Post.objects.first()
-        text = object_post.text
-        self.assertEqual(text, form_data['text'])
-        self.assertEqual(object_post.group.id, form_data['group'])
-        self.assertEqual(object_post.author, PostCreateFormTest.user)
-
-    def test_change_post(self):
-        """Валидная форма изменяет запись в Post."""
-        Post.objects.create(
-            text='Тестовый текст',
-            author=self.user,
-        )
-        post_count = Post.objects.count()
-        form_data = {
-            'text': 'Тестовый текст',
-            'group': self.group.pk,
-        }
-        self.authorized_client.post(
-            reverse("posts:post_edit", args=('1', )),
-            data=form_data,
-            follow=True)
-        self.assertEqual(Post.objects.count(), post_count)
-        object_post = Post.objects.get(pk=self.group.pk)
-        text = object_post.text
-        self.assertEqual(text, form_data['text'])
-        self.assertEqual(object_post.group.pk, form_data['group'])
