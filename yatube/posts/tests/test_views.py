@@ -241,14 +241,14 @@ class FollowViewsTest(TestCase):
 
     def test_follow(self):
         """Пользовтель может подписаться на автора."""
-        count_follow = Follow.objects.count()
         self.authorized_client.post(reverse(
             'posts:profile_follow',
             kwargs={'username': self.follower2.username}))
-        follow = Follow.objects.all().latest('id')
-        self.assertTrue(Follow.objects.count(), count_follow)
-        self.assertTrue(follow.author_id, self.follower1.id)
-        self.assertTrue(follow.user_id, self.follower3.id)
+        response_follow = self.authorized_client.get(
+            reverse('posts:follow_index')
+        )
+        context_follow = response_follow.context
+        self.check_context(context_follow)        
 
     def test_unfollow(self):
         """Пользовтель может отписаться от автора."""

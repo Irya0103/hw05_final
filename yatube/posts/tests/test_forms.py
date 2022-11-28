@@ -73,7 +73,7 @@ class PostCreateFormTest(TestCase):
         self.assertEqual(object_post.group.id, form_data['group'])
         self.assertEqual(object_post.author, PostCreateFormTest.user)
         self.assertEqual(
-            f'posts/{form_data["image"].name}', object_post.image.name)
+            object_post.image.name, f'posts/{form_data["image"].name}')
 
     def test_guest_new_post(self):
         """Неавторизоанный пользователь не может создавать посты"""
@@ -113,7 +113,7 @@ class PostCreateFormTest(TestCase):
         self.assertEqual(object_post.text, form_data['text'])
         self.assertEqual(object_post.group.id, form_data['group'])
         self.assertEqual(
-            f'posts/{form_data["image"].name}', object_post.image.name)
+            object_post.image.name, f'posts/{form_data["image"].name}')
 
     def test_comment_created(self):
         """проверка ваолидности комментария"""
