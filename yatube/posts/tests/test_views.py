@@ -241,7 +241,7 @@ class FollowViewsTest(TestCase):
 
     def test_follow(self):
         """Пользовтель может подписаться на автора."""
-        url= (reverse(
+        url = (reverse(
             'posts:profile_follow',
             kwargs={'username': self.follower2.username}))
         self.authorized_client.force_login(self.follower1)
