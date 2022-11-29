@@ -241,14 +241,18 @@ class FollowViewsTest(TestCase):
 
     def test_follow(self):
         """Пользовтель может подписаться на автора."""
-        self.authorized_client.post(reverse(
+        url= (reverse(
             'posts:profile_follow',
             kwargs={'username': self.follower2.username}))
-        response_follow = self.authorized_client.get(
-            reverse('posts:follow_index')
-        )
-        context_follow = response_follow.context
-        self.check_context(context_follow)        
+        self.authorized_client.force_login(self.follower1)
+        response = self.authorized_client.get(url, follow=True)
+        self.assertRedirects(
+            response, reverse('posts:profile', kwargs={
+                'username': self.follower2.username}))
+        self.assertTrue(
+            Follow.objects.filter(
+                user=self.follower1, author=self.follower2
+            ).exists())
 
     def test_unfollow(self):
         """Пользовтель может отписаться от автора."""
