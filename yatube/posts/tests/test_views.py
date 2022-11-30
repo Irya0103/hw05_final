@@ -242,8 +242,8 @@ class FollowViewsTest(TestCase):
     def test_follow(self):
         """Пользовтель может подписаться на автора."""
         Follow.objects.filter(
-                user=self.follower1,
-                author=self.follower2).exists()
+            user=self.follower1,
+            author=self.follower2).exists()
         url = (reverse(
             'posts:profile_follow',
             kwargs={'username': self.follower2.username}))
