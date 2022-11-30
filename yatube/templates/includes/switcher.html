@@ -2,7 +2,6 @@
   {% if user.is_authenticated %}
     <div class="row my-3">
       <ul class="nav nav-tabs">
-        <ul class="nav nav-pills">
           <li class="nav-item">
             <a 
               class="nav-link {% if view_name  == 'posts:index' %}active{% endif %}"
@@ -19,7 +18,7 @@
               Избранные авторы
             </a>
           </li>
-        </ul>
+      </ul>
     </div>
   {% endif %}
 {% endwith %}

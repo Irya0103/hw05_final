@@ -6,7 +6,7 @@
 <div class="container py-5">
   <h1>Все посты пользователя {{ author.get_full_name }} </h1>
   <h3>Всего постов: {{ author.posts.count }} </h3>
-  {% if user.is_authenticated%}
+  {% if request.user != author%}
     {% if following %}
       <a
         class="btn btn-lg btn-light"
@@ -25,8 +25,8 @@
   {% endif %}
   {% for post in page_obj %}
     {% include "includes/card_post.html" %}
-  {% endfor %}
   {% if not forloop.last %}<hr>{% endif %}
+  {% endfor %}
   {% include 'includes/paginator.html' %}
 </div>
 {% endblock %}
