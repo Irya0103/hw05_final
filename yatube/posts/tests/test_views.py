@@ -241,14 +241,16 @@ class FollowViewsTest(TestCase):
 
     def test_follow(self):
         """Пользовтель может подписаться на автора."""
-        Follow.objects.filter(
+        self.assertFalse(Follow.objects.filter(
             user=self.follower1,
-            author=self.follower2).exists()
+            author=self.follower2).exists())
         url = (reverse(
             'posts:profile_follow',
             kwargs={'username': self.follower2.username}))
         self.authorized_client.force_login(self.follower1)
         self.authorized_client.get(url, follow=True)
+        follow = Follow.objects.latest('id')
+        self.assertEqual(Follow.objects.count(), Follow.objects.count())
 
     def test_unfollow(self):
         """Пользовтель может отписаться от автора."""
