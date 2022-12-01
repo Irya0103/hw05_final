@@ -250,7 +250,7 @@ class FollowViewsTest(TestCase):
         self.authorized_client.force_login(self.follower1)
         self.authorized_client.get(url, follow=True)
         follow = Follow.objects.latest('id')
-        self.assertEqual(Follow.objects.count(), Follow.objects.count())
+        self.assertTrue(Follow.objects.count(), Follow.objects.count() + 1)
 
     def test_unfollow(self):
         """Пользовтель может отписаться от автора."""
