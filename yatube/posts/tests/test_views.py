@@ -213,7 +213,8 @@ class PaginatorViewsTest(TestCase):
 
     def test_second_profile_page_contains_three_records(self):
         """Количество постов на второй странице ровно 3"""
-        url = reverse('posts:profile', kwargs={'username': self.user.username}) + '?page=2'
+        url = reverse(
+            'posts:profile', kwargs={'username': self.user.username}) + '?page=2'
         response = self.guest_client.get(url)
         self.assertEqual(len(response.context['page_obj']), 3)
 
